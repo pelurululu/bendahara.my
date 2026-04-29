@@ -396,6 +396,65 @@
       .principle-row { padding: 24px 24px; gap: 20px; }
       .footer { align-items: flex-start; gap: 12px; flex-direction: column; }
     }
+
+    /* ── Scroll Reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+    .hero { transition: background-position 0.1s linear; }
+    .service-row {
+  position: relative;
+  overflow: hidden;
+}
+.service-row::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(17,16,16,0.04) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+.service-row:hover::after {
+  transform: translateX(100%);
+}
+    .nav-links a {
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: #111010;
+  transition: width 0.35s ease;
+}
+.nav-links a:hover::after {
+  width: 100%;
+}
+    #cursor {
+  position: fixed;
+  width: 7px;
+  height: 7px;
+  background: #111010;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease, opacity 0.3s ease;
+}
+.hero #cursor, .statement-block #cursor, .invite-hero #cursor { background: white; }
   </style>
 </head>
 <body>
@@ -415,7 +474,7 @@
     <header class="hero" id="home">
       <div class="hero-inner">
         <div class="hero-eyebrow">Bendahara · House of Wangsa</div>
-        <h1 class="hero-title">Bendahara</h1>
+       <h1 class="hero-title" id="hero-title"></h1>
         <p class="hero-sub">Mengurus yang rumit. Menyempurnakan yang penting. Bagi yang menuntut perhatian luar biasa.</p>
         <div class="hero-rule"><div class="hero-rule-line"></div><div class="hero-rule-dot"></div><div class="hero-rule-line"></div></div>
       </div>
@@ -645,5 +704,65 @@
       <div class="footer-right">Bendahara · House of Wangsa</div>
     </footer>
   </div>
+  <div id="cursor"></div>
 </body>
+  <script>
+  // Add reveal class to all the elements you want animated
+  const targets = document.querySelectorAll(
+    '.copy-block, .card, .voice-card, .service-row, .principle-row, .logo-box, .statement-block, .invite-hero, .closing-block, .section-title, .section-sub, .ornament'
+  );
+
+  // Stagger cards/rows within grids
+  targets.forEach((el, i) => {
+    el.classList.add('reveal');
+    // Stagger siblings inside grids
+    const parent = el.parentElement;
+    if (parent.classList.contains('grid-2') || parent.classList.contains('grid-3') || parent.classList.contains('services-wrap')) {
+      const siblings = [...parent.children];
+      const idx = siblings.indexOf(el);
+      if (idx === 1) el.classList.add('reveal-delay-1');
+      if (idx === 2) el.classList.add('reveal-delay-2');
+      if (idx === 3) el.classList.add('reveal-delay-3');
+    }
+  });
+
+  // Observe and trigger
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target); // animate once
+      }
+    });
+  }, { threshold: 0.12 });
+
+  targets.forEach(el => observer.observe(el));
+
+    const titleEl = document.getElementById('hero-title');
+const word = 'Bendahara';
+word.split('').forEach((ch, i) => {
+  const span = document.createElement('span');
+  span.textContent = ch;
+  span.style.cssText = `opacity:0; display:inline-block; transition: opacity 0.06s ease ${i * 0.07}s, transform 0.5s ease ${i * 0.07}s; transform: translateY(12px)`;
+  titleEl.appendChild(span);
+  setTimeout(() => { span.style.opacity = '1'; span.style.transform = 'translateY(0)'; }, 300 + i * 70);
+});
+    window.addEventListener('scroll', () => {
+  const hero = document.querySelector('.hero');
+  hero.style.backgroundPosition = `50% ${window.scrollY * 0.35}px`;
+});
+
+    const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+document.querySelectorAll('a, .card, .service-row, .principle-row').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width = '14px'; cursor.style.height = '14px'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width = '7px'; cursor.style.height = '7px'; });
+});
+// Hide system cursor on the page
+document.body.style.cursor = 'none';
+document.querySelectorAll('a').forEach(a => a.style.cursor = 'none');
+</script>
 </html>
